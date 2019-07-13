@@ -19,4 +19,21 @@ public class TestHashMap {
         map.put("gender", "male");
         System.out.println(map);
     }
+
+    @Test
+    public void test(){
+        System.out.println(tableSizeFor(6));
+    }
+
+
+    int tableSizeFor(int cap) {
+        int MAXIMUM_CAPACITY = 1 << 30;
+        int n = cap - 1;
+        n |= n >>> 1;
+        n |= n >>> 2;
+        n |= n >>> 4;
+        n |= n >>> 8;
+        n |= n >>> 16;
+        return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+    }
 }

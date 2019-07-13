@@ -31,7 +31,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     // 默认负载因子
     static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
-    // 长度超过八个会转换为树形结构
+    // 每个链表长度超过八个会转换为树形结构
     static final int TREEIFY_THRESHOLD = 8;
 
     // 树形结构少于6个会转换为链表
@@ -92,9 +92,11 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     transient Collection<V> values;
 
     /* ---------------- Fields -------------- */
+    // 储存链表的数组
     transient Node<K,V>[] table;
 
     transient Set<Map.Entry<K,V>> entrySet;
+
 
     transient int size;
 
@@ -195,23 +197,31 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         Node<K,V>[] tab; Node<K,V> p; int n, i;
         if ((tab = table) == null || (n = tab.length) == 0)
             n = (tab = resize()).length;
+        // 原本位置为空
         if ((p = tab[i = (n - 1) & hash]) == null)
             tab[i] = newNode(hash, key, value, null);
+        // 原本位置不为空 一个是链表的形式 一个是红黑树的形式
         else {
             Node<K,V> e; K k;
+            // hash值相和hash值相等 Node进行替换
             if (p.hash == hash &&
                     ((k = p.key) == key || (key != null && key.equals(k))))
                 e = p;
+            // 如果是红黑树
             else if (p instanceof TreeNode)
                 e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+            // 链表的方式
             else {
                 for (int binCount = 0; ; ++binCount) {
+                    // 节点为空 直接挂到next下面
                     if ((e = p.next) == null) {
                         p.next = newNode(hash, key, value, null);
+                        // 判断是否需要转换为红黑树 大于7的 话进行红黑树的转换
                         if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
                             treeifyBin(tab, hash);
                         break;
                     }
+                    // hash和key值相等 进行替换
                     if (e.hash == hash &&
                             ((k = e.key) == key || (key != null && key.equals(k))))
                         break;
@@ -227,12 +237,20 @@ public class HashMap<K, V> extends AbstractMap<K, V>
             }
         }
         ++modCount;
+        // 如果数组使用的大小大于12 那么需要对数组进行扩容操作
         if (++size > threshold)
             resize();
         afterNodeInsertion(evict);
         return null;
     }
 
+    /**
+     * @description: 初始化数组  2倍扩容操作
+     * @param: []
+     * @return: com.general.HashMap.Node<K,V>[]
+     * @author: general
+     * @date: 2019-06-29 13:26
+    */
     final Node<K,V>[] resize() {
         Node<K,V>[] oldTab = table;
         int oldCap = (oldTab == null) ? 0 : oldTab.length;
@@ -249,6 +267,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
         else if (oldThr > 0) // initial capacity was placed in threshold
             newCap = oldThr;
+        // 初始化容量为空
         else {               // zero initial threshold signifies using defaults
             newCap = DEFAULT_INITIAL_CAPACITY;
             newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
@@ -262,21 +281,26 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         @SuppressWarnings({"rawtypes","unchecked"})
         Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
         table = newTab;
+        // 数组扩容好了  要把原来的节点移动一下  分布均匀
         if (oldTab != null) {
             for (int j = 0; j < oldCap; ++j) {
                 Node<K,V> e;
                 if ((e = oldTab[j]) != null) {
                     oldTab[j] = null;
+                    // 数组为空的节点
                     if (e.next == null)
                         newTab[e.hash & (newCap - 1)] = e;
+                    // 红黑树
                     else if (e instanceof TreeNode)
                         ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
+                    // 链表
                     else { // preserve order
                         Node<K,V> loHead = null, loTail = null;
                         Node<K,V> hiHead = null, hiTail = null;
                         Node<K,V> next;
                         do {
                             next = e.next;
+                            // 原来的结果不动
                             if ((e.hash & oldCap) == 0) {
                                 if (loTail == null)
                                     loHead = e;
@@ -292,6 +316,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                                 hiTail = e;
                             }
                         } while ((e = next) != null);
+                        // 链表的位置要么是原来的位置不动 也么是oldCap+原来的位置
                         if (loTail != null) {
                             loTail.next = null;
                             newTab[j] = loHead;

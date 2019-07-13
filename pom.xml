@@ -12,6 +12,7 @@
         <module>netty-training</module>
         <module>deep-in-spring</module>
         <module>java-base</module>
+        <module>design-pattern</module>
     </modules>
 
     <properties>
