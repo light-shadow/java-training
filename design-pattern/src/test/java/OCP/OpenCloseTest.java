@@ -1,3 +1,5 @@
+package OCP;
+
 import com.general.OCP.ICourse;
 import com.general.OCP.JavaCourse;
 import com.general.OCP.JavaDiscountCourse;
