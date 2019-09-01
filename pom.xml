@@ -13,6 +13,7 @@
         <module>deep-in-spring</module>
         <module>java-base</module>
         <module>design-pattern</module>
+        <module>multi-thread</module>
     </modules>
 
     <properties>
